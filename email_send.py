@@ -61,11 +61,14 @@ class EmailSend(object):
                 with open(file, 'rb') as file:
                     msg_file = MIMEImage(file.read(), name = rename_file_to)
                     msg.attach(msg_file)
+
             else:
                 file_name = os.path.basename(file)
                 with open(file, 'rb') as file:
                     msg_file = MIMEImage(file.read(), name = file_name)
                     msg.attach(msg_file)
+            
+            file.close()
                 
             
             self.__smtp.sendmail(self.__sender, receivers, msg.as_string())
@@ -77,7 +80,7 @@ class EmailSend(object):
         
 
 
-    def send_email_with_any_attach(self, receivers, subject, text, file, rename_file_to = ''):
+    def send_email_with_any_attach(self, receivers, subject, text, path_file, rename_file_to = None):
             
         try:
             msg = MIMEMultipart()
@@ -86,9 +89,7 @@ class EmailSend(object):
             msg['subject'] = subject
 
             if rename_file_to:
-                extension_file = os.path.basename(file)
-                extension_file = extension_file[-1:-4]  
-                with open(file, 'rb') as file:
+                with open(path_file, 'rb') as file:
                     msg_file = MIMEBase('application', 'zip', name = rename_file_to)
                     msg_file.set_payload(file.read())
                 encoders.encode_base64(msg_file)
@@ -96,16 +97,13 @@ class EmailSend(object):
 
             else:
                 file_name = os.path.basename(file)
-                extension_file = file_name[-1:-4]
-                print(extension_file)
-                print(extension_file)
-                with open(file, 'rb') as file:
+                with open(path_file, 'rb') as file:
                     msg_file = MIMEBase('application', 'zip', name = file_name)
                     msg_file.set_payload(file.read())
                 encoders.encode_base64(msg_file)
                 msg.attach(msg_file)
-                
-        
+
+            file.close()    
             self.__smtp.sendmail(self.__sender, receivers, msg.as_string())
             self.__smtp.quit()
 
